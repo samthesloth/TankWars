@@ -52,11 +52,22 @@ namespace NetworkUtil
         private static void AcceptNewClient(IAsyncResult ar)
         {
             Tuple<Action<SocketState>, TcpListener> temp = (Tuple<Action<SocketState>, TcpListener>)ar.AsyncState;
-            SocketState ss = new SocketState(temp.Item1, temp.Item2.EndAcceptSocket(ar));
 
-            ss.OnNetworkAction(ss);
+            try
+            {
+                SocketState ss = new SocketState(temp.Item1, temp.Item2.EndAcceptSocket(ar));
+                ss.OnNetworkAction(ss);
+                temp.Item2.BeginAcceptSocket(AcceptNewClient, temp);
+            }
+            catch
+            {
+                SocketState ss = new SocketState(temp.Item1, null);
+                ss.ErrorOccured = true;
+                ss.ErrorMessage = "Connection Failed";
+                ss.OnNetworkAction(ss);
+            }
 
-            temp.Item2.BeginAcceptSocket(AcceptNewClient, ar);
+            
         }
 
         /// <summary>
@@ -95,6 +106,7 @@ namespace NetworkUtil
             // Establish the remote endpoint for the socket.
             IPHostEntry ipHostInfo;
             IPAddress ipAddress = IPAddress.None;
+            SocketState temp = new SocketState(toCall, null);
 
             // Determine if the server address is a URL or an IP
             try
@@ -111,8 +123,9 @@ namespace NetworkUtil
                 // Didn't find any IPV4 addresses
                 if (!foundIPV4)
                 {
-                    // TODO: Indicate an error to the user, as specified in the documentation
-                   
+                    temp.ErrorOccured = true;
+                    temp.ErrorMessage = "Couldn't find IPv4";
+                    temp.OnNetworkAction(temp);
                 }
             }
             catch (Exception)
@@ -124,7 +137,9 @@ namespace NetworkUtil
                 }
                 catch (Exception)
                 {
-                    // TODO: Indicate an error to the user, as specified in the documentation
+                    temp.ErrorOccured = true;
+                    temp.ErrorMessage = "Host name not valid";
+                    temp.OnNetworkAction(temp);
                 }
             }
 
@@ -135,10 +150,22 @@ namespace NetworkUtil
             // Nagle's algorithm can cause problems for a latency-sensitive 
             // game like ours will be 
             socket.NoDelay = true;
-            bool success = socket.BeginConnect(ipAddress, port, ConnectedCallback, new SocketState(toCall, socket)).AsyncWaitHandle.WaitOne(3000, true);
-            if(!success)
+            temp = new SocketState(toCall, socket);
+            try
             {
-
+                bool success = socket.BeginConnect(ipAddress, port, ConnectedCallback, temp).AsyncWaitHandle.WaitOne(3000, true);
+                if (!success)
+                {
+                    temp.ErrorOccured = true;
+                    temp.ErrorMessage = "Connection Timeout Error";
+                    temp.OnNetworkAction(temp);
+                }
+            }
+            catch
+            {
+                temp.ErrorOccured = true;
+                temp.ErrorMessage = "Connection Failed";
+                temp.OnNetworkAction(temp);
             }
         }
 
@@ -158,9 +185,19 @@ namespace NetworkUtil
         private static void ConnectedCallback(IAsyncResult ar)
         {
             SocketState ss = (SocketState)ar.AsyncState;
-
-            ss.TheSocket.EndConnect(ar);
-            ss.OnNetworkAction(ss);
+            try
+            {
+                ss.TheSocket.EndConnect(ar);
+                ss.OnNetworkAction(ss);
+            }
+            catch
+            {
+                if (ss.ErrorOccured)
+                    return;
+                ss.ErrorOccured = true;
+                ss.ErrorMessage = "Connection Failed";
+                ss.OnNetworkAction(ss);
+            }
         }
 
 
@@ -182,7 +219,16 @@ namespace NetworkUtil
         /// <param name="state">The SocketState to begin receiving</param>
         public static void GetData(SocketState state)
         {
-            state.TheSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
+            try
+            {
+                state.TheSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
+            }
+            catch
+            {
+                state.ErrorOccured = true;
+                state.ErrorMessage = "Receive Failed";
+                state.OnNetworkAction(state);
+            }
         }
 
         /// <summary>
@@ -206,12 +252,24 @@ namespace NetworkUtil
         {
             SocketState ss = (SocketState)ar.AsyncState;
 
-            lock (ss)
+            try
             {
-                ss.data.Append(Encoding.UTF8.GetString(ss.buffer, 0, ss.TheSocket.EndReceive(ar)));
-            }
 
-            ss.OnNetworkAction(ss);
+                lock (ss)
+                {
+                    ss.data.Append(Encoding.UTF8.GetString(ss.buffer, 0, ss.TheSocket.EndReceive(ar)));
+                }
+
+                ss.OnNetworkAction(ss);
+            }
+            catch
+            {
+                if (ss.ErrorOccured)
+                    return;
+                ss.ErrorOccured = true;
+                ss.ErrorMessage = "Receive Failed";
+                ss.OnNetworkAction(ss);
+            }
 
         }
 
@@ -229,9 +287,17 @@ namespace NetworkUtil
         {
             if(socket.Connected)
             {
-                byte[] temp = Encoding.UTF8.GetBytes(data);
-                socket.BeginSend(temp, 0, temp.Length, SocketFlags.None, SendCallback, socket);
-                return true;
+                try
+                {
+                    byte[] temp = Encoding.UTF8.GetBytes(data);
+                    socket.BeginSend(temp, 0, temp.Length, SocketFlags.None, SendCallback, socket);
+                    return true;
+                }
+                catch
+                {
+                    socket.Close();
+                    return false;
+                }
             }
             return false;
         }
@@ -250,7 +316,14 @@ namespace NetworkUtil
         private static void SendCallback(IAsyncResult ar)
         {
             Socket temp = (Socket)ar.AsyncState;
-            temp.EndSend(ar);
+            try
+            {
+                temp.EndSend(ar);
+            }
+            catch
+            {
+
+            }
         }
 
 
@@ -269,9 +342,17 @@ namespace NetworkUtil
         {
             if (socket.Connected)
             {
-                byte[] temp = Encoding.UTF8.GetBytes(data);
-                socket.BeginSend(temp, 0, temp.Length, SocketFlags.None, SendAndCloseCallback, socket);
-                return true;
+                try
+                {
+                    byte[] temp = Encoding.UTF8.GetBytes(data);
+                    socket.BeginSend(temp, 0, temp.Length, SocketFlags.None, SendAndCloseCallback, socket);
+                    return true;
+                }
+                catch
+                {
+                    socket.Close();
+                    return false;
+                }
             }
             return false;
         }
@@ -292,8 +373,15 @@ namespace NetworkUtil
         private static void SendAndCloseCallback(IAsyncResult ar)
         {
             Socket temp = (Socket)ar.AsyncState;
-            temp.EndSend(ar);
-            temp.Close();
+            try
+            {
+                temp.EndSend(ar);
+                temp.Close();
+            }
+            catch
+            {
+                temp.Close();
+            }
         }
 
     }
