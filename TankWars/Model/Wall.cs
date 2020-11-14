@@ -8,16 +8,25 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class Wall
+    public class Wall
     {
         [JsonProperty(PropertyName = "wall")]
-        private int ID;
+        public int ID
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "p1")]
-        private Vector2D topLeft;
+        public Vector2D topLeft
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "p2")]
-        private Vector2D bottomRight;
+        public Vector2D bottomRight
+        {
+            get;
+        }
 
         public Wall()
         {

@@ -8,26 +8,43 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class Powerup
+    public class Powerup
     {
         [JsonProperty(PropertyName = "power")]
-        private int ID;
+        public int ID
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "loc")]
-        private Vector2D location;
+        public Vector2D location
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "died")]
-        private bool died = false;
+        public bool died
+        {
+            get;
+        }
 
         public Powerup()
         {
 
         }
 
-        public Powerup(int ID, Vector2D location)
+        public Powerup(int ID, Vector2D location, bool died)
         {
             this.ID = ID;
             this.location = location;
+            this.died = died;
+        }
+
+        public void UpdatePowerup(int ID, Vector2D location, bool died)
+        {
+            this.ID = ID;
+            this.location = location;
+            this.died = died;
         }
     }
 }

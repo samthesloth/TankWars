@@ -8,34 +8,59 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class Projectile
+    public class Projectile
     {
         [JsonProperty(PropertyName = "proj")]
-        private int ID;
+        public int ID
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "loc")]
-        private Vector2D location;
+        public Vector2D location
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "dir")]
-        private Vector2D orientation;
+        public Vector2D orientation
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "died")]
-        private bool died = false;
+        public bool died
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "owner")]
-        private int owner;
+        public int owner
+        {
+            get;
+        }
 
         public Projectile()
         {
 
         }
 
-        public Projectile(int ID, Vector2D location, Vector2D orientation, int owner)
+        public Projectile(int ID, Vector2D location, Vector2D orientation, int owner, bool died)
         {
             this.ID = ID;
             this.location = location;
             this.orientation = orientation;
             this.owner = owner;
+            this.died = died;
+        }
+
+        public void UpdateProjectile(int ID, Vector2D location, Vector2D orientation, int owner, bool died)
+        {
+            this.ID = ID;
+            this.location = location;
+            this.orientation = orientation;
+            this.owner = owner;
+            this.died = died;
         }
     }
 }

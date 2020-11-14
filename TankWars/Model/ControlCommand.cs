@@ -8,16 +8,25 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class ControlCommand
+    public class ControlCommand
     {
         [JsonProperty(PropertyName = "moving")]
-        private string moving;
+        public string moving
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "fire")]
-        private string fire;
+        public string fire
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "tdir")]
-        private Vector2D direction;
+        public Vector2D direction
+        {
+            get;
+        }
 
         public ControlCommand()
         {

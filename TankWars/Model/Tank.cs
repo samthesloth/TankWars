@@ -8,49 +8,95 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class Tank
+    public class Tank
     {
         [JsonProperty(PropertyName = "tank")]
-        private int ID;
+        public int ID
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "loc")]
-        private Vector2D location;
+        public Vector2D location
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "bdir")]
-        private Vector2D orientation;
+        public Vector2D orientation
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "tdir")]
-        private Vector2D aiming = new Vector2D(0, -1);
+        public Vector2D aiming
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "name")]
-        private string name;
+        public string name
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "hp")]
-        private int hitPoints = 3;
+        public int hitPoints
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "score")]
-        private int score = 0;
+        public int score
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "died")]
-        private bool died = false;
+        public bool died
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "dc")]
-        private bool disconnected = false;
+        public bool disconnected
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "join")]
-        private bool joined = false;
+        public bool joined
+        {
+            get;
+        }
 
         public Tank()
         {
 
         }
 
-        public Tank(int ID, Vector2D location, Vector2D orientation, string name)
+        public Tank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died)
         {
             this.ID = ID;
             this.location = location;
             this.orientation = orientation;
             this.name = name;
+            this.aiming = aiming;
+            this.hitPoints = hp;
+            this.score = score;
+            this.died = died;
+        }
+
+        public void UpdateTank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died)
+        {
+            this.ID = ID;
+            this.location = location;
+            this.orientation = orientation;
+            this.name = name;
+            this.aiming = aiming;
+            this.hitPoints = hp;
+            this.score = score;
+            this.died = died;
         }
     }
 }

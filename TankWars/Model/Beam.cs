@@ -8,19 +8,31 @@ namespace Model
 {
 
     [JsonObject(MemberSerialization.OptIn)]
-    class Beam
+    public class Beam
     {
         [JsonProperty(PropertyName = "beam")]
-        private int ID;
+        public int ID
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "org")]
-        private Vector2D origin;
+        public Vector2D origin
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "dir")]
-        private Vector2D direction;
+        public Vector2D direction
+        {
+            get;
+        }
 
         [JsonProperty(PropertyName = "owner")]
-        private int owner;
+        public int owner
+        {
+            get;
+        }
 
         public Beam()
         {
