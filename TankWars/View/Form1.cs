@@ -1,39 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using TankWars;
 
 namespace TankWars
 {
     public partial class Form1 : Form
     {
-        GameController controller;
-        World world;
-        DrawingPanel drawingPanel;
-        Button startButton;
-        Label nameLabel;
-        TextBox nameText;
-        Label hostLabel;
-        TextBox hostText;
+        //Controller and world objects
+        private GameController controller;
+        private World world;
 
+        //Drawing panel where game will be displayed
+        private DrawingPanel drawingPanel;
+
+        //Button to start the game
+        private Button startButton;
+
+        //Label and text box for putting in player name
+        private Label nameLabel;
+        private TextBox nameText;
+
+        //Label and text box for putting in host name
+        private Label hostLabel;
+        private TextBox hostText;
+
+        //Constants to be used for window management
         private const int viewSize = 900;
         private const int menuSize = 40;
 
-
+        /// <summary>
+        /// Main form application. Sets controller, world, and clientsize. Then adds events for controller and finally adds form components
+        /// </summary>
         public Form1(GameController controller)
         {
+            //Initialize and set controller to parameter and world to controller's world
             InitializeComponent();
             this.controller = controller;
             this.world = controller.GetWorld();
 
+            //Sets clientsize for form
             ClientSize = new Size(viewSize, viewSize + menuSize);
 
+            //Adds listeners to events for controller-view handshake
             controller.OnUpdate += OnFrame;
             controller.IDLoaded += SetID;
             controller.WorldLoaded += SetWorld;
@@ -82,9 +90,8 @@ namespace TankWars
             this.Controls.Add(drawingPanel);
         }
 
-
         /// <summary>
-        /// Handler for the controller's OnUpdate event
+        /// Handler for the controller's OnUpdate event. Invalidates itself so drawingPanel redraws
         /// </summary>
         private void OnFrame()
         {
@@ -94,32 +101,36 @@ namespace TankWars
             this.Invoke(invalidator);
         }
 
+        /// <summary>
+        /// Handler for the controller's IDLoaded event. Call's drawingPanel's SetID so we know where to center camera
+        /// </summary>
         private void SetID()
         {
             drawingPanel.SetID(controller.GetPlayerID());
         }
 
+        /// <summary>
+        /// Handler for the controller's WorldLoaded event. Sets this form and drawingPanel's world to the loaded world
+        /// </summary>
         private void SetWorld()
         {
+            world = controller.GetWorld();
             drawingPanel.SetWorld(controller.GetWorld());
         }
 
         /// <summary>
-        /// When
+        /// Called when Start is clicked. Disables form components, enables KeyPreview, and calls controller's connect method
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void StartClick(object sender, EventArgs e)
         {
             // Disable the form controls
             startButton.Enabled = false;
             nameText.Enabled = false;
+            hostText.Enabled = false;
             // Enable the global form to capture key presses
             KeyPreview = true;
             // "connect" to the "server"
             controller.Connect(hostText.Text, nameText.Text);
         }
-
-
     }
 }

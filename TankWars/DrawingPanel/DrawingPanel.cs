@@ -1,35 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Authors: Nicholas Vaskelis and Sam Peters
+
+using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TankWars
 {
     public class DrawingPanel : Panel
     {
+        // References to world, player ID, and view size in order to draw and center camera
         private World theWorld;
         private int PlayerID;
         private int ViewSize;
 
+        /// <summary>
+        /// Constructor that simply sets double buffered and the world
+        /// </summary>
         public DrawingPanel(World w)
         {
+            //DoubleBuffered to reduce tearing
             DoubleBuffered = true;
+            //Sets world, although this will be changed later in SetWorld
             theWorld = w;
         }
 
+        /// <summary>
+        /// Sets PlayerID to ID so the camera can center around the player
+        /// </summary>
         public void SetID(int ID)
         {
             PlayerID = ID;
         }
 
+        /// <summary>
+        /// Sets ViewSize to size so camera can be centered
+        /// </summary>
         public void SetViewSize(int size)
         {
             ViewSize = size;
         }
 
+        /// <summary>
+        /// Sets world since constructor is called early. Used for normalizing vectors
+        /// </summary>
+        /// <param name="w"></param>
         public void SetWorld(World w)
         {
             theWorld = w;
@@ -47,9 +61,8 @@ namespace TankWars
         }
 
         // A delegate for DrawObjectWithTransform
-        // Methods matching this delegate can draw whatever they want using e  
+        // Methods matching this delegate can draw whatever they want using e
         public delegate void ObjectDrawer(object o, PaintEventArgs e);
-
 
         /// <summary>
         /// This method performs a translation and rotation to drawn an object in the world.
@@ -85,11 +98,12 @@ namespace TankWars
         /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void TankDrawer(object o, PaintEventArgs e)
         {
+            //Gets the tank object and sets width and height. Sets antialias
             Tank t = o as Tank;
-
             int width = 60;
             int height = 60;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
             using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
             using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green))
             {
@@ -129,6 +143,13 @@ namespace TankWars
             }
         }
 
+        /// <summary>
+        /// Acts as a drawing delegate for DrawObjectWithTransform
+        /// After performing the necessary transformation (translate/rotate)
+        /// DrawObjectWithTransform will invoke this method
+        /// </summary>
+        /// <param name="o">The object to draw</param>
+        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void WallDrawer(object o, PaintEventArgs e)
         {
             Wall w = o as Wall;
@@ -136,7 +157,7 @@ namespace TankWars
             int height, width;
             int distance = (int)Math.Sqrt(Math.Pow(w.p1.GetX() - w.p2.GetX(), 2) + Math.Pow(w.p1.GetY() - w.p2.GetY(), 2));
 
-            if(w.p2.GetX() == w.p1.GetX())
+            if (w.p2.GetX() == w.p1.GetX())
             {
                 width = 50;
                 height = distance;
@@ -144,7 +165,7 @@ namespace TankWars
             else
             {
                 height = 50;
-                width =  distance;
+                width = distance;
             }
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
@@ -159,7 +180,6 @@ namespace TankWars
             }
         }
 
-
         // This method is invoked when the DrawingPanel needs to be re-drawn
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -168,8 +188,8 @@ namespace TankWars
                 lock (theWorld)
                 {
                     Tank player;
-                    if (theWorld.GetTank(PlayerID, out player)) {
-
+                    if (theWorld.GetTank(PlayerID, out player))
+                    {
                         double playerX = player.location.GetX();
                         double playerY = player.location.GetY();
 
@@ -182,7 +202,6 @@ namespace TankWars
                         e.Graphics.TranslateTransform((float)inverseTranslateX, (float)inverseTranslateY);
                     }
 
-            
                     // Draw the tanks
                     foreach (Tank tank in theWorld.GetTanks())
                     {
@@ -205,7 +224,5 @@ namespace TankWars
             // Do anything that Panel (from which we inherit) needs to do
             base.OnPaint(e);
         }
-
     }
 }
-
