@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TankWars;
 
-namespace Model
+namespace TankWars
 {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -13,19 +12,19 @@ namespace Model
         [JsonProperty(PropertyName = "moving")]
         public string moving
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "fire")]
         public string fire
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "tdir")]
         public Vector2D direction
         {
-            get;
+            get; private set;
         }
 
         public ControlCommand()

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace View
+namespace TankWars
 {
     static class Program
     {
@@ -16,7 +16,9 @@ namespace View
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            GameController gc = new GameController();
+            Form1 form = new Form1(gc);
+            Application.Run(form);
         }
     }
 }

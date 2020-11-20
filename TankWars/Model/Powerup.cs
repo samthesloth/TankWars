@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TankWars;
 
-namespace Model
+namespace TankWars
 {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -13,19 +12,19 @@ namespace Model
         [JsonProperty(PropertyName = "power")]
         public int ID
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "loc")]
         public Vector2D location
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "died")]
         public bool died
         {
-            get;
+            get; private set;
         }
 
         public Powerup()

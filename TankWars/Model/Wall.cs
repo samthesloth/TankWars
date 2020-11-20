@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TankWars;
 
-namespace Model
+namespace TankWars
 {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -13,19 +12,19 @@ namespace Model
         [JsonProperty(PropertyName = "wall")]
         public int ID
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "p1")]
-        public Vector2D topLeft
+        public Vector2D p1
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "p2")]
-        public Vector2D bottomRight
+        public Vector2D p2
         {
-            get;
+            get; private set;
         }
 
         public Wall()
@@ -36,8 +35,8 @@ namespace Model
         public Wall(int ID, Vector2D topLeft, Vector2D bottomRight)
         {
             this.ID = ID;
-            this.topLeft = topLeft;
-            this.bottomRight = bottomRight;
+            this.p1 = topLeft;
+            this.p2 = bottomRight;
         }
     }
 }

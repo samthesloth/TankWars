@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TankWars;
 
-namespace Model
+namespace TankWars
 {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -13,31 +12,31 @@ namespace Model
         [JsonProperty(PropertyName = "proj")]
         public int ID
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "loc")]
         public Vector2D location
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "dir")]
         public Vector2D orientation
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "died")]
         public bool died
         {
-            get;
+            get; private set;
         }
 
         [JsonProperty(PropertyName = "owner")]
         public int owner
         {
-            get;
+            get; private set;
         }
 
         public Projectile()

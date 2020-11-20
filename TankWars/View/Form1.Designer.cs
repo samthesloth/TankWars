@@ -1,4 +1,4 @@
-﻿namespace View
+﻿namespace TankWars
 {
     partial class Form1
     {

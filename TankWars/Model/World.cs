@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TankWars;
 
-namespace Model
+namespace TankWars
 {
     public class World
     {
@@ -126,6 +125,20 @@ namespace Model
         public void LoadWalls()
         {
             WallsLoaded = true;
+        }
+
+        public bool GetTank(int ID, out Tank t)
+        {
+            if(tanks.ContainsKey(ID))
+            {
+                t = tanks[ID];
+                return true;
+            }
+            else
+            {
+                t = null;
+                return false;
+            }
         }
     }
 }

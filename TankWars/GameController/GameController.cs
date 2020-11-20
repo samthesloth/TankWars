@@ -2,23 +2,31 @@
 using System;
 using NetworkUtil;
 using System.Text.RegularExpressions;
-using Model;
 using Newtonsoft.Json.Linq;
-using TankWars;
 
-namespace GameController
+namespace TankWars
 {
     public class GameController
     {
         private string PlayerName;
         private int PlayerID = -1;
         private World world;
-        private string movement;
-        private string fire;
-        private Vector2D direction;
+        private string movement = "none";
+        private string fire = "none";
+        private Vector2D aiming = new Vector2D(0, -1);
         private SocketState server;
+        public delegate void UpdateHandler();
+        public event UpdateHandler OnUpdate;
+        public event UpdateHandler IDLoaded;
+        public event UpdateHandler WorldLoaded;
 
-        private void Connect(string hostName, string playerName)
+        public GameController()
+        {
+            
+        }
+
+
+        public void Connect(string hostName, string playerName)
         {
             PlayerName = playerName;
             Networking.ConnectToServer(FirstContact, hostName, 11000);
@@ -29,14 +37,20 @@ namespace GameController
             state.OnNetworkAction = ReceiveStartup;
             server = state;
             Networking.Send(state.TheSocket, PlayerName);
-            Networking.GetData(state);
+            lock (state)
+            {
+                Networking.GetData(state);
+            }
         }
 
         private void ReceiveStartup(SocketState state)
         {
             ProcessMessage(state);
             state.OnNetworkAction = ReceiveWorld;
-            Networking.GetData(state);
+            lock (state)
+            {
+                Networking.GetData(state);
+            }
         }
 
         /// <summary>
@@ -52,7 +66,7 @@ namespace GameController
             foreach (string s in parts)
             {
                 //If the part has a length of 0, then it is not a complete message
-                if (parts.Length == 0)
+                if (s.Length <= 0)
                 {
                     continue;
                 }
@@ -77,10 +91,13 @@ namespace GameController
                         if (type != null)
                         {
                             Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                            world.AddWall(w.ID, w.topLeft, w.bottomRight);
+                            world.AddWall(w.ID, w.p1, w.p2);
                         }
                         else
+                        {
                             world.LoadWalls();
+                            WorldLoaded();
+                        }
                     }
 
                     //If it a tank, update the world
@@ -122,6 +139,7 @@ namespace GameController
                     if (PlayerID < 0)
                     {
                         PlayerID = Int32.Parse(s);
+                        IDLoaded();
                     }
                     //Otherwise, the part must be the world
                     else
@@ -131,13 +149,25 @@ namespace GameController
                 }
                 //Remove the processed part
                 state.RemoveData(0, s.Length);
+
+                if(OnUpdate != null)
+                {
+                    OnUpdate();
+                }
+                if (world != null && world.WallsLoaded)
+                {
+                    //Send();
+                }
             }
         }
 
         private void ReceiveWorld(SocketState state)
         {
             ProcessMessage(state);
-            Networking.GetData(state);
+            lock (state)
+            {
+                Networking.GetData(state);
+            }
         }
 
         public void Move(string movement)
@@ -150,16 +180,26 @@ namespace GameController
             this.fire = fire;
         }
 
-        public void Direction(Vector2D direction)
+        public void Direction(Vector2D aiming)
         {
-            this.direction = direction;
+            this.aiming = aiming;
         }
 
         public void Send()
         {
-            ControlCommand cc = new ControlCommand(movement, fire, direction);
+            ControlCommand cc = new ControlCommand(movement, fire, aiming);
             string command = JsonConvert.SerializeObject(cc);
             Networking.Send(server.TheSocket, command);
+        }
+
+        public World GetWorld()
+        {
+            return world;
+        }
+
+        public int GetPlayerID()
+        {
+            return PlayerID;
         }
     }
 }
