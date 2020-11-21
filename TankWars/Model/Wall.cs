@@ -38,14 +38,11 @@ namespace TankWars
         /// <summary>
         /// Constructor that sets properties
         /// </summary>
-        /// <param name="ID"></param>
-        /// <param name="topLeft"></param>
-        /// <param name="bottomRight"></param>
-        public Wall(int ID, Vector2D topLeft, Vector2D bottomRight)
+        public Wall(int ID, Vector2D p1, Vector2D p2)
         {
             this.ID = ID;
-            this.p1 = topLeft;
-            this.p2 = bottomRight;
+            this.p1 = p1;
+            this.p2 = p2;
         }
     }
 }

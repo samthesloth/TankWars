@@ -36,6 +36,10 @@ namespace TankWars
 
         public event UpdateHandler WorldLoaded;
 
+        public delegate void BeamHandler(Beam b);
+
+        public event BeamHandler BeamFired;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -156,7 +160,7 @@ namespace TankWars
                     if (type != null)
                     {
                         Beam b = JsonConvert.DeserializeObject<Beam>(s);
-                        world.AddBeam(b.ID, b.origin, b.direction, b.owner);
+                        BeamFired(b);
                     }
                 }
                 //If it is not a json object, then it must be the world size or player id
@@ -235,6 +239,14 @@ namespace TankWars
             ControlCommand cc = new ControlCommand(movement, fire, aiming);
             string command = JsonConvert.SerializeObject(cc);
             Networking.Send(server.TheSocket, command);
+        }
+
+        /// <summary>
+        /// Sends and closes in order to close socket
+        /// </summary>
+        public void Close()
+        {
+            Networking.SendAndClose(server.TheSocket, "");
         }
 
         /// <summary>

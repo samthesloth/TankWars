@@ -10,7 +10,6 @@ namespace TankWars
         private Dictionary<int, Tank> tanks;
         private Dictionary<int, Projectile> projectiles;
         private Dictionary<int, Wall> walls;
-        private Dictionary<int, Beam> beams;
         private Dictionary<int, Powerup> powerups;
 
         //Size of world
@@ -30,7 +29,6 @@ namespace TankWars
             tanks = new Dictionary<int, Tank>();
             projectiles = new Dictionary<int, Projectile>();
             walls = new Dictionary<int, Wall>();
-            beams = new Dictionary<int, Beam>();
             powerups = new Dictionary<int, Powerup>();
             this.size = size;
         }
@@ -51,14 +49,13 @@ namespace TankWars
             //If tank exists...
             if (tanks.ContainsKey(ID))
             {
+                tanks[ID].UpdateTank(ID, location, orientation, aiming, name, hp, score, died);
                 //If it's dead, remove from dictionary
-                if (died)
+                if (tanks[ID].disconnected)
                 {
                     tanks.Remove(ID);
                     return;
                 }
-                //If not dead, update it with new values
-                tanks[ID].UpdateTank(ID, location, orientation, aiming, name, hp, score, died);
             }
             else
             {
@@ -75,14 +72,13 @@ namespace TankWars
             //If projectile exists...
             if (projectiles.ContainsKey(ID))
             {
+                projectiles[ID].UpdateProjectile(ID, location, orientation, owner, died);
                 //If it's dead, remove it from dictionary
                 if (died)
                 {
                     projectiles.Remove(ID);
                     return;
                 }
-                //If not dead, update it with new values
-                projectiles[ID].UpdateProjectile(ID, location, orientation, owner, died);
             }
             else
             {
@@ -100,22 +96,6 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Adds beam to beam dictionary. Will be removed in one frame
-        /// </summary>
-        public void AddBeam(int ID, Vector2D origin, Vector2D direction, int owner)
-        {
-            beams.Add(ID, new Beam(ID, origin, direction, owner));
-        }
-
-        /// <summary>
-        /// Removes beam from beams dictionary
-        /// </summary>
-        public void RemoveBeam(int ID)
-        {
-            beams.Remove(ID);
-        }
-
-        /// <summary>
         /// Updates, adds, or removes powerup from dictionary
         /// </summary>
         public void UpdatePowerup(int ID, Vector2D location, bool died)
@@ -123,14 +103,13 @@ namespace TankWars
             //If powerup exists...
             if (powerups.ContainsKey(ID))
             {
+                powerups[ID].UpdatePowerup(ID, location, died);
                 //If died, remove from dictionary
                 if (died)
                 {
-                    projectiles.Remove(ID);
+                    powerups.Remove(ID);
                     return;
                 }
-                //If not died, update its values
-                powerups[ID].UpdatePowerup(ID, location, died);
             }
             else
             {
@@ -165,16 +144,6 @@ namespace TankWars
         {
             foreach (Wall w in walls.Values)
                 yield return w;
-        }
-
-        /// <summary>
-        /// Returns IEnumerable of Beams dictionary
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<Beam> GetBeams()
-        {
-            foreach (Beam b in beams.Values)
-                yield return b;
         }
 
         /// <summary>

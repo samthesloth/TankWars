@@ -88,6 +88,7 @@ namespace TankWars
             drawingPanel.Size = new Size(viewSize, viewSize);
             drawingPanel.SetViewSize(viewSize);
             this.Controls.Add(drawingPanel);
+            controller.BeamFired += drawingPanel.DrawBeam;
         }
 
         /// <summary>
@@ -97,8 +98,12 @@ namespace TankWars
         {
             // Invalidate this form and all its children
             // This will cause the form to redraw as soon as it can
-            MethodInvoker invalidator = new MethodInvoker(() => this.Invalidate(true));
-            this.Invoke(invalidator);
+            try
+            {
+                MethodInvoker invalidator = new MethodInvoker(() => this.Invalidate(true));
+                this.Invoke(invalidator);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -131,6 +136,14 @@ namespace TankWars
             KeyPreview = true;
             // "connect" to the "server"
             controller.Connect(hostText.Text, nameText.Text);
+        }
+
+        /// <summary>
+        /// When form is closing, close socket
+        /// </summary>
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            controller.Close();
         }
     }
 }
