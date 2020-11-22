@@ -87,7 +87,7 @@ namespace TankWars
         /// <summary>
         /// Constructor for tank that sets properties
         /// </summary>
-        public Tank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died)
+        public Tank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died, bool disconnected)
         {
             this.ID = ID;
             this.location = location;
@@ -97,12 +97,13 @@ namespace TankWars
             this.hitPoints = hp;
             this.score = score;
             this.died = died;
+            this.disconnected = disconnected;
         }
 
         /// <summary>
         /// Updates the tank's properties
         /// </summary>
-        public void UpdateTank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died)
+        public void UpdateTank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died, bool disconnected)
         {
             this.ID = ID;
             this.location = location;
@@ -112,6 +113,7 @@ namespace TankWars
             this.hitPoints = hp;
             this.score = score;
             this.died = died;
+            this.disconnected = disconnected;
         }
     }
 }

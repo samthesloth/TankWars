@@ -47,8 +47,8 @@ namespace TankWars
         Bitmap YellowShot;
 
         //Dictionary to hold beams and tanks and their amount of frames since they've spawned/died
-        Dictionary<Beam, int> beams;
-        Dictionary<Tank, int> tanks;
+        Dictionary<Beam, int> beamsTimer;
+        Dictionary<Tank, int> tankTimer;
 
         /// <summary>
         /// Constructor that simply sets double buffered and the world
@@ -61,8 +61,8 @@ namespace TankWars
             theWorld = w;
 
             //Initializes beams and tanks
-            beams = new Dictionary<Beam, int>();
-            tanks = new Dictionary<Tank, int>();
+            beamsTimer = new Dictionary<Beam, int>();
+            tankTimer = new Dictionary<Tank, int>();
 
             //Initializes images and font
             WallImage = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png");
@@ -85,13 +85,14 @@ namespace TankWars
             Background = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\Background.png");
             BlueShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-blue.png");
             GrayShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot_grey.png");
-            GreenShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-green.png");
+            GreenShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png");
             WhiteShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-white.png");
             BrownShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-brown.png");
             PurpleShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-violet.png");
             RedShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot_red_new.png");
             YellowShot = (Bitmap)Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png");
 
+            //Set up stringformat and font
             sf = new StringFormat();
             sf.Alignment = StringAlignment.Center;
             font = new Font("Franklin Gothic", 15);
@@ -370,7 +371,7 @@ namespace TankWars
 
         public void DrawBeam(Beam b)
         {
-            beams.Add(b, 0);
+            beamsTimer.Add(b, 0);
         }
 
         /// <summary>
@@ -382,7 +383,7 @@ namespace TankWars
         {
             //Gets the tank object and sets width and height. Sets antialias
             Beam b = o as Beam;
-            int width = 4;
+            int width = 10 - (beamsTimer[b] / 6);
             int height = 5000;
 
             // Rectangles are drawn starting from the top-left corner.
@@ -392,6 +393,43 @@ namespace TankWars
 
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red)) {
                 e.Graphics.FillRectangle(redBrush, r);
+            }
+        }
+
+        /// <summary>
+        /// Acts as a drawing delegate for DrawObjectWithTransform
+        /// After performing the necessary transformation (translate/rotate)
+        /// DrawObjectWithTransform will invoke this method
+        /// </summary>
+        private void ExplosionDrawer(object o, PaintEventArgs e)
+        {
+            Tank t = o as Tank;
+            Tank temp = new Tank();
+            if (!theWorld.GetTank(t.ID, out temp))
+            {
+                tankTimer.Remove(t);
+                return;
+            }
+
+            //Gets the tank object and sets width and height for explosion. Sets antialias
+            int frames = tankTimer[t];
+            int radius;
+            if (frames <= 50)
+                radius = frames  * 2;
+            else if (frames <= 150)
+                radius = 150 - frames;
+            else
+                radius = 0;
+
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+            {
+                // Circles are drawn starting from the top-left corner.
+                // So if we want the circle centered on the powerup's location, we have to offset it
+                // by half its size to the left (-width/2) and up (-height/2)
+                Rectangle r = new Rectangle(-(radius / 2), -(radius / 2), radius, radius);
+
+                e.Graphics.FillEllipse(redBrush, r);
             }
         }
 
@@ -422,7 +460,7 @@ namespace TankWars
 
             //Texture brush with image to draw walls
             TextureBrush textureBrush = new TextureBrush(WallImage, System.Drawing.Drawing2D.WrapMode.Tile);
-            textureBrush.ScaleTransform(0.75f, 0.75f);
+            textureBrush.ScaleTransform(0.8f, 0.8f);
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             using (textureBrush)
@@ -445,19 +483,20 @@ namespace TankWars
             {
                 lock (theWorld)
                 {
+                    //Get player's tank to center view
                     Tank player;
                     if (theWorld.GetTank(PlayerID, out player))
                     {
-                        double playerX = player.location.GetX();
-                        double playerY = player.location.GetY();
+                            double playerX = player.location.GetX();
+                            double playerY = player.location.GetY();
 
-                        double ratio = (double)ViewSize / (double)theWorld.GetSize();
-                        int halfSizeScaled = (int)(theWorld.GetSize() / 2.0 * ratio);
+                            double ratio = (double)ViewSize / (double)theWorld.GetSize();
+                            int halfSizeScaled = (int)(theWorld.GetSize() / 2.0 * ratio);
 
-                        double inverseTranslateX = -WorldSpaceToImageSpace(theWorld.GetSize(), playerX) + halfSizeScaled;
-                        double inverseTranslateY = -WorldSpaceToImageSpace(theWorld.GetSize(), playerY) + halfSizeScaled;
+                            double inverseTranslateX = -WorldSpaceToImageSpace(theWorld.GetSize(), playerX) + halfSizeScaled;
+                            double inverseTranslateY = -WorldSpaceToImageSpace(theWorld.GetSize(), playerY) + halfSizeScaled;
 
-                        e.Graphics.TranslateTransform((float)inverseTranslateX, (float)inverseTranslateY);
+                            e.Graphics.TranslateTransform((float)inverseTranslateX, (float)inverseTranslateY);
                     }
 
                     //Draw background
@@ -466,7 +505,7 @@ namespace TankWars
                     // Draw the tanks
                     foreach (Tank tank in theWorld.GetTanks())
                     {
-                        if (!tank.died && !tanks.ContainsKey(tank))
+                        if (!tank.died && !tankTimer.ContainsKey(tank) && tank.hitPoints > 0)
                         {
                             DrawObjectWithTransform(e, tank, theWorld.GetSize(), tank.location.GetX(), tank.location.GetY(), tank.orientation.ToAngle(), TankDrawer);
                             DrawObjectWithTransform(e, tank, theWorld.GetSize(), tank.location.GetX(), tank.location.GetY(), tank.aiming.ToAngle(), TurretDrawer);
@@ -474,20 +513,25 @@ namespace TankWars
                         }
                         else
                         {
-                            if (tanks.ContainsKey(tank))
+                            if(tank.hitPoints > 0)
                             {
-                                if (tanks[tank] > 0)
+                                tankTimer.Remove(tank);
+                                break;
+                            }
+                            if (tankTimer.ContainsKey(tank))
+                            {
+                                if (tankTimer[tank] < 200)
                                 {
-                                    tanks[tank]--;
+                                    tankTimer[tank]++;
                                 }
                                 else
                                 {
-                                    tanks.Remove(tank);
+                                    tankTimer.Remove(tank);
                                 }
                             }
                             else
                             {
-                                tanks.Add(tank, 300);
+                                tankTimer.Add(tank, 0);
                             }
                         }
                     }
@@ -500,16 +544,16 @@ namespace TankWars
                     }
 
                     //Draw beams
-                    List<Beam> list = new List<Beam>(beams.Keys);
-                    foreach (Beam b in list)
+                    List<Beam> beams = new List<Beam>(beamsTimer.Keys);
+                    foreach (Beam b in beams)
                     {
-                        if(beams[b] > 60)
+                        if(beamsTimer[b] > 60)
                         {
-                            beams.Remove(b);
+                            beamsTimer.Remove(b);
                         }
                         else
                         {
-                            beams[b]++;
+                            beamsTimer[b]++;
                             DrawObjectWithTransform(e, b, theWorld.GetSize(), b.origin.GetX(), b.origin.GetY(), b.direction.ToAngle(), BeamDrawer); ;
                         }
                     }
@@ -530,6 +574,13 @@ namespace TankWars
                         {
                             DrawObjectWithTransform(e, p, theWorld.GetSize(), p.location.GetX(), p.location.GetY(), p.orientation.ToAngle(), ProjectileDrawer);
                         }
+                    }
+
+                    //Draw tank explosions
+                    List<Tank> tanks = new List<Tank>(tankTimer.Keys);
+                    foreach (Tank t in tanks)
+                    {
+                        DrawObjectWithTransform(e, t, theWorld.GetSize(), t.location.GetX(), t.location.GetY(), 0, ExplosionDrawer);
                     }
                 }
             }

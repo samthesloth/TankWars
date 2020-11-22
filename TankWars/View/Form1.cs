@@ -48,7 +48,7 @@ namespace TankWars
 
             // Place and add the start button
             startButton = new Button();
-            startButton.Location = new Point(230, 5);
+            startButton.Location = new Point(245, 5);
             startButton.Size = new Size(70, 20);
             startButton.Text = "Start";
             startButton.Click += StartClick;
@@ -64,6 +64,7 @@ namespace TankWars
             // Place and add the name textbox
             nameText = new TextBox();
             nameText.Text = "player";
+            nameText.MaxLength = 16;
             nameText.Location = new Point(50, 5);
             nameText.Size = new Size(70, 15);
             this.Controls.Add(nameText);
@@ -71,14 +72,14 @@ namespace TankWars
             // Place and add the host label
             hostLabel = new Label();
             hostLabel.Text = "Host:";
-            hostLabel.Location = new Point(120, 10);
+            hostLabel.Location = new Point(125, 10);
             hostLabel.Size = new Size(40, 15);
             this.Controls.Add(hostLabel);
 
             // Place and add the host textbox
             hostText = new TextBox();
-            hostText.Text = "localhost";
-            hostText.Location = new Point(160, 5);
+            hostText.Text = "";
+            hostText.Location = new Point(165, 5);
             hostText.Size = new Size(70, 15);
             this.Controls.Add(hostText);
 
@@ -89,13 +90,20 @@ namespace TankWars
             drawingPanel.SetViewSize(viewSize);
             this.Controls.Add(drawingPanel);
             controller.BeamFired += drawingPanel.DrawBeam;
+
+            //Set up controls
+            this.KeyDown += Moved;
+            drawingPanel.MouseDown += Shoot;
+            drawingPanel.MouseUp += StopShoot;
+            drawingPanel.MouseMove += Aim;
+            this.KeyUp += StopMove;
         }
 
         /// <summary>
         /// Handler for the controller's OnUpdate event. Invalidates itself so drawingPanel redraws
         /// </summary>
         private void OnFrame()
-        {
+        { 
             // Invalidate this form and all its children
             // This will cause the form to redraw as soon as it can
             try
@@ -104,6 +112,104 @@ namespace TankWars
                 this.Invoke(invalidator);
             }
             catch { }
+
+            //If world is set and walls are loaded, call Send
+            if (world != null && world.WallsLoaded)
+            {
+                controller.Send();
+            }
+        }
+
+        /// <summary>
+        /// Method to be called when key is pushed to call controller's Move method
+        /// </summary>
+        private void Moved(Object sender, KeyEventArgs e)
+        {
+            lock (sender)
+            {
+                switch (e.KeyData)
+                {
+                    case (Keys.W):
+                        controller.W = true;
+                        break;
+                    case (Keys.A):
+                        controller.A = true;
+                        break;
+                    case (Keys.D):
+                        controller.D = true;
+                        break;
+                    case (Keys.S):
+                        controller.S = true;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method to be called when key is done being pushed. Calls controller's move
+        /// </summary>
+        private void StopMove(Object sender, KeyEventArgs e)
+        {
+            lock (sender)
+            {
+                switch (e.KeyData)
+                {
+                    case (Keys.W):
+                        controller.W = false;
+                        break;
+                    case (Keys.A):
+                        controller.A = false;
+                        break;
+                    case (Keys.D):
+                        controller.D = false;
+                        break;
+                    case (Keys.S):
+                        controller.S = false;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method to be called when mouse is clicked to change controller's bools
+        /// </summary>
+        private void Shoot(Object sender, MouseEventArgs e)
+        {
+            switch(e.Button)
+            {
+                case (MouseButtons.Left):
+                    controller.LMB = true;
+                    break;
+                case (MouseButtons.Right):
+                    controller.RMB = true;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Method to be called when mouse button is released to change controller's bools
+        /// </summary>
+        private void StopShoot(Object sender, MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case (MouseButtons.Left):
+                    controller.LMB = false;
+                    break;
+                case (MouseButtons.Right):
+                    controller.RMB = false;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Method to be called when mouse moves. Calls controller's aiming metho
+        /// </summary>
+        private void Aim(Object sender, MouseEventArgs e)
+        {
+            Vector2D aim = new Vector2D(e.X - 450, e.Y - 450);
+            aim.Normalize();
+            controller.Aiming(aim);
         }
 
         /// <summary>
@@ -121,6 +227,9 @@ namespace TankWars
         {
             world = controller.GetWorld();
             drawingPanel.SetWorld(controller.GetWorld());
+
+            // Enable the global form to capture key presses
+            KeyPreview = true;
         }
 
         /// <summary>
@@ -128,14 +237,18 @@ namespace TankWars
         /// </summary>
         private void StartClick(object sender, EventArgs e)
         {
-            // Disable the form controls
-            startButton.Enabled = false;
-            nameText.Enabled = false;
-            hostText.Enabled = false;
-            // Enable the global form to capture key presses
-            KeyPreview = true;
-            // "connect" to the "server"
-            controller.Connect(hostText.Text, nameText.Text);
+            if (hostText.TextLength > 0 && nameText.TextLength > 0)
+            {
+                // Disable the form controls
+                startButton.Enabled = false;
+                startButton.TabStop = false;
+                nameText.Enabled = false;
+                hostText.Enabled = false;
+                //Set focus to drawing panel
+                this.Focus();
+                // "connect" to the "server"
+                controller.Connect(hostText.Text, nameText.Text);
+            }
         }
 
         /// <summary>

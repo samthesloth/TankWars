@@ -40,6 +40,32 @@ namespace TankWars
 
         public event BeamHandler BeamFired;
 
+        //Boolean properties for if a key/mouse button is pushed or not
+        public bool A
+        {
+            get; set;
+        }
+        public bool W
+        {
+            get; set;
+        }
+        public bool S
+        {
+            get; set;
+        }
+        public bool D
+        {
+            get; set;
+        }
+        public bool LMB
+        {
+            get; set;
+        }
+        public bool RMB
+        {
+            get; set;
+        }
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -61,6 +87,10 @@ namespace TankWars
         /// </summary>
         private void FirstContact(SocketState state)
         {
+            if(state.ErrorOccured)
+            {
+                return;
+            }
             state.OnNetworkAction = ReceiveStartup;
             server = state;
             Networking.Send(state.TheSocket, PlayerName);
@@ -75,6 +105,11 @@ namespace TankWars
         /// </summary>
         private void ReceiveStartup(SocketState state)
         {
+            if (state.ErrorOccured)
+            {
+                return;
+            }
+
             ProcessMessage(state);
             state.OnNetworkAction = ReceiveWorld;
             lock (state)
@@ -89,6 +124,11 @@ namespace TankWars
         /// </summary>
         private void ProcessMessage(SocketState state)
         {
+            if (state.ErrorOccured)
+            {
+                return;
+            }
+
             //Gets data and parts from data
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])");
@@ -106,61 +146,63 @@ namespace TankWars
                 {
                     break;
                 }
-
                 //If the part is a json, deserialize
                 if (s[0] == '{')
                 {
-                    //Get the json object out of the part
-                    JObject obj = JObject.Parse(s);
-                    JToken type;
-
-                    //Wall
-                    if (!world.WallsLoaded)
+                    lock (world)
                     {
-                        type = obj["wall"];
+                        //Get the json object out of the part
+                        JObject obj = JObject.Parse(s);
+                        JToken type;
+
+                        //Wall
+                        if (!world.WallsLoaded)
+                        {
+                            type = obj["wall"];
+                            if (type != null)
+                            {
+                                Wall w = JsonConvert.DeserializeObject<Wall>(s);
+                                world.AddWall(w.ID, w.p1, w.p2);
+                            }
+                            else
+                            {
+                                //As soon as we reach a JSON that isn't a wall, the walls are loaded
+                                world.LoadWalls();
+                                WorldLoaded();
+                            }
+                        }
+
+                        //If it a tank, update the world
+                        type = obj["tank"];
                         if (type != null)
                         {
-                            Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                            world.AddWall(w.ID, w.p1, w.p2);
+                            Tank t = JsonConvert.DeserializeObject<Tank>(s);
+                            world.UpdateTank(t.ID, t.location, t.orientation, t.aiming, t.name, t.hitPoints, t.score, t.died, t.disconnected);
                         }
-                        else
+
+                        //Projectile
+                        type = obj["proj"];
+                        if (type != null)
                         {
-                            //As soon as we reach a JSON that isn't a wall, the walls are loaded
-                            world.LoadWalls();
-                            WorldLoaded();
+                            Projectile p = JsonConvert.DeserializeObject<Projectile>(s);
+                            world.UpdateProjectile(p.ID, p.location, p.orientation, p.owner, p.died);
                         }
-                    }
 
-                    //If it a tank, update the world
-                    type = obj["tank"];
-                    if (type != null)
-                    {
-                        Tank t = JsonConvert.DeserializeObject<Tank>(s);
-                        world.UpdateTank(t.ID, t.location, t.orientation, t.aiming, t.name, t.hitPoints, t.score, t.died);
-                    }
+                        //Powerup
+                        type = obj["power"];
+                        if (type != null)
+                        {
+                            Powerup p = JsonConvert.DeserializeObject<Powerup>(s);
+                            world.UpdatePowerup(p.ID, p.location, p.died);
+                        }
 
-                    //Projectile
-                    type = obj["proj"];
-                    if (type != null)
-                    {
-                        Projectile p = JsonConvert.DeserializeObject<Projectile>(s);
-                        world.UpdateProjectile(p.ID, p.location, p.orientation, p.owner, p.died);
-                    }
-
-                    //Powerup
-                    type = obj["power"];
-                    if (type != null)
-                    {
-                        Powerup p = JsonConvert.DeserializeObject<Powerup>(s);
-                        world.UpdatePowerup(p.ID, p.location, p.died);
-                    }
-
-                    //Beam
-                    type = obj["beam"];
-                    if (type != null)
-                    {
-                        Beam b = JsonConvert.DeserializeObject<Beam>(s);
-                        BeamFired(b);
+                        //Beam
+                        type = obj["beam"];
+                        if (type != null)
+                        {
+                            Beam b = JsonConvert.DeserializeObject<Beam>(s);
+                            BeamFired(b);
+                        }
                     }
                 }
                 //If it is not a json object, then it must be the world size or player id
@@ -178,18 +220,17 @@ namespace TankWars
                         world = new World(Int32.Parse(s));
                     }
                 }
-                //Remove the processed part
-                state.RemoveData(0, s.Length);
+
+                lock (state)
+                {
+                    //Remove the processed part
+                    state.RemoveData(0, s.Length);
+                }
 
                 //If OnUpdate is set, call it
                 if (OnUpdate != null)
                 {
                     OnUpdate();
-                }
-                //If world is set and walls are loaded, call Send
-                if (world != null && world.WallsLoaded)
-                {
-                    //Send();
                 }
             }
         }
@@ -199,6 +240,11 @@ namespace TankWars
         /// </summary>
         private void ReceiveWorld(SocketState state)
         {
+            if (state.ErrorOccured)
+            {
+                return;
+            }
+
             ProcessMessage(state);
             lock (state)
             {
@@ -209,24 +255,38 @@ namespace TankWars
         /// <summary>
         /// Changes movement instance variable
         /// </summary>
-        public void Move(string movement)
+        public void Move()
         {
-            this.movement = movement;
+            if (W)
+                movement = "up";
+            else if (S)
+                movement = "down";
+            else if (A)
+                movement = "left";
+            else if (D)
+                movement = "right";
+            else
+                movement = "none";
         }
 
         /// <summary>
         /// Changes fire instance variable
         /// </summary>
-        public void Fire(string fire)
+        public void Fire()
         {
-            this.fire = fire;
+            if (LMB)
+                fire = "main";
+            else if (RMB)
+                fire = "alt";
+            else
+                fire = "none";
         }
 
         /// <summary>
         /// Changes aiming instance variable
         /// </summary>
         /// <param name="aiming"></param>
-        public void Direction(Vector2D aiming)
+        public void Aiming(Vector2D aiming)
         {
             this.aiming = aiming;
         }
@@ -236,9 +296,12 @@ namespace TankWars
         /// </summary>
         public void Send()
         {
+            Move();
+            Fire();
             ControlCommand cc = new ControlCommand(movement, fire, aiming);
-            string command = JsonConvert.SerializeObject(cc);
+            string command = JsonConvert.SerializeObject(cc) + "\n";
             Networking.Send(server.TheSocket, command);
+            Console.WriteLine(command);
         }
 
         /// <summary>
@@ -246,7 +309,10 @@ namespace TankWars
         /// </summary>
         public void Close()
         {
-            Networking.SendAndClose(server.TheSocket, "");
+            if (!(server is null))
+            {
+                Networking.SendAndClose(server.TheSocket, "");
+            }
         }
 
         /// <summary>

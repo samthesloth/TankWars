@@ -44,12 +44,12 @@ namespace TankWars
         /// <summary>
         /// Updates, adds, or removes tank from dictionary
         /// </summary>
-        public void UpdateTank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died)
+        public void UpdateTank(int ID, Vector2D location, Vector2D orientation, Vector2D aiming, string name, int hp, int score, bool died, bool disconnected)
         {
             //If tank exists...
             if (tanks.ContainsKey(ID))
             {
-                tanks[ID].UpdateTank(ID, location, orientation, aiming, name, hp, score, died);
+                tanks[ID].UpdateTank(ID, location, orientation, aiming, name, hp, score, died, disconnected);
                 //If it's dead, remove from dictionary
                 if (tanks[ID].disconnected)
                 {
@@ -60,7 +60,7 @@ namespace TankWars
             else
             {
                 //Otherwise, add the new tank to the dictionary
-                tanks.Add(ID, new Tank(ID, location, orientation, aiming, name, hp, score, died));
+                tanks.Add(ID, new Tank(ID, location, orientation, aiming, name, hp, score, died, disconnected));
             }
         }
 
@@ -167,9 +167,6 @@ namespace TankWars
         /// <summary>
         /// Returns true if tank is in dictionary. Also sets t to that tank if it exists
         /// </summary>
-        /// <param name="ID"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
         public bool GetTank(int ID, out Tank t)
         {
             //If it exists, set it and return true
