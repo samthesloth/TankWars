@@ -27,17 +27,12 @@ namespace TankWars
         //The socket state for the server connection
         private SocketState server;
 
-        //Creates delegate and events to be used to communicate with View
+        //Creates delegates and events to be used to communicate with View
         public delegate void UpdateHandler();
-
         public event UpdateHandler OnUpdate;
-
         public event UpdateHandler IDLoaded;
-
         public event UpdateHandler WorldLoaded;
-
         public delegate void BeamHandler(Beam b);
-
         public event BeamHandler BeamFired;
 
         //Boolean properties for if a key/mouse button is pushed or not
@@ -155,7 +150,7 @@ namespace TankWars
                         JObject obj = JObject.Parse(s);
                         JToken type;
 
-                        //Wall
+                        //Wall is not loaded
                         if (!world.WallsLoaded)
                         {
                             type = obj["wall"];
@@ -285,7 +280,6 @@ namespace TankWars
         /// <summary>
         /// Changes aiming instance variable
         /// </summary>
-        /// <param name="aiming"></param>
         public void Aiming(Vector2D aiming)
         {
             this.aiming = aiming;
@@ -301,7 +295,6 @@ namespace TankWars
             ControlCommand cc = new ControlCommand(movement, fire, aiming);
             string command = JsonConvert.SerializeObject(cc) + "\n";
             Networking.Send(server.TheSocket, command);
-            Console.WriteLine(command);
         }
 
         /// <summary>

@@ -46,12 +46,13 @@ namespace TankWars
         Bitmap RedShot;
         Bitmap YellowShot;
 
-        //Dictionary to hold beams and tanks and their amount of frames since they've spawned/died
+        //Dictionary to hold beams and tanks and their amount of frames since their animation started
         Dictionary<Beam, int> beamsTimer;
         Dictionary<Tank, int> tankTimer;
 
         /// <summary>
-        /// Constructor that simply sets double buffered and the world
+        /// Constructor that  sets double buffered and the world
+        /// Also sets up images and font
         /// </summary>
         public DrawingPanel(World w)
         {
@@ -115,9 +116,8 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Sets world since constructor is called early. Used for normalizing vectors
+        /// Sets world since constructor is called early. Used for drawing and centering
         /// </summary>
-        /// <param name="w"></param>
         public void SetWorld(World w)
         {
             theWorld = w;
@@ -126,9 +126,6 @@ namespace TankWars
         /// <summary>
         /// Helper method for DrawObjectWithTransform
         /// </summary>
-        /// <param name="size">The world (and image) size</param>
-        /// <param name="w">The worldspace coordinate</param>
-        /// <returns></returns>
         private static int WorldSpaceToImageSpace(int size, double w)
         {
             return (int)w + size / 2;
@@ -167,9 +164,8 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws body of tanks
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void TankDrawer(object o, PaintEventArgs e)
         {
             //Gets the tank object and sets width and height. Sets antialias
@@ -177,11 +173,8 @@ namespace TankWars
             int width = 60;
             int height = 60;
 
-            // Rectangles are drawn starting from the top-left corner.
-            // So if we want the rectangle centered on the player's location, we have to offset it
-            // by half its size to the left (-width/2) and up (-height/2)
+            // Creates rectangle to draw tank and draws with image
             Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
             e.Graphics.DrawImage(GetTankColor(t), r);
         }
 
@@ -189,15 +182,16 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws HP, name, and score of tanks
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void InfoDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
             SolidBrush brush = new SolidBrush(Color.White);
             using (brush) {
+                //Draw name and score
                 e.Graphics.DrawString(t.name + ": " + t.score, font, brush, 0, 30, sf);
+                //Draw healthbar according to hp left
                 switch (t.hitPoints)
                 {
                     case (3):
@@ -220,9 +214,8 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws top turret of tank
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void TurretDrawer(object o, PaintEventArgs e)
         {
             //Gets the tank object and sets width and height. Sets antialias
@@ -230,16 +223,13 @@ namespace TankWars
             int width = 60;
             int height = 60;
 
-            // Rectangles are drawn starting from the top-left corner.
-            // So if we want the rectangle centered on the player's location, we have to offset it
-            // by half its size to the left (-width/2) and up (-height/2)
+            // Creates rectangle to draw and then draws image
             Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
             e.Graphics.DrawImage(GetTurretColor(t), r);
         }
 
         /// <summary>
-        /// Returns the image of the turret color for the given turret
+        /// Returns the image of the turret color for the given turret using ID
         /// </summary>
         private Bitmap GetTurretColor(Tank t)
         {
@@ -267,7 +257,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Returns the image of the turret color for the given turret
+        /// Returns the image of the turret color for the given turret using ID
         /// </summary>
         private Bitmap GetTankColor(Tank t)
         {
@@ -298,9 +288,8 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws projectile objects
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void ProjectileDrawer(object o, PaintEventArgs e)
         {
             //Gets the tank object and sets width and height. Sets antialias
@@ -308,16 +297,13 @@ namespace TankWars
             int width = 30;
             int height = 30;
 
-            // Rectangles are drawn starting from the top-left corner.
-            // So if we want the rectangle centered on the player's location, we have to offset it
-            // by half its size to the left (-width/2) and up (-height/2)
+            // Creates rectangle for drawing and then draws image
             Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
             e.Graphics.DrawImage(GetProjectileColor(p), r);
         }
 
         /// <summary>
-        /// Returns the image of the projectile color for the given turret
+        /// Returns the image of the projectile color for the given turret using owner's ID
         /// </summary>
         private Bitmap GetProjectileColor(Projectile p)
         {
@@ -348,27 +334,27 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws powerup collectibles throughout gameworld
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void PowerupDrawer(object o, PaintEventArgs e)
         {
+            //Get powerup and set width, height, and antialias
             Powerup p = o as Powerup;
-
             int width = 15;
             int height = 15;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            //Creates rectangle for drawing and then draws ellipse/circle
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
             {
-                // Circles are drawn starting from the top-left corner.
-                // So if we want the circle centered on the powerup's location, we have to offset it
-                // by half its size to the left (-width/2) and up (-height/2)
                 Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
                 e.Graphics.FillEllipse(redBrush, r);
             }
         }
 
+        /// <summary>
+        /// Adds beam to beamsTimer dictionary so countdown for animation can be started
+        /// </summary>
         public void DrawBeam(Beam b)
         {
             beamsTimer.Add(b, 0);
@@ -378,19 +364,17 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws beams using frames in beamsTimer
         /// </summary>
         private void BeamDrawer(object o, PaintEventArgs e)
         {
-            //Gets the tank object and sets width and height. Sets antialias
+            //Gets the tank object and sets width and height of beam using timer
             Beam b = o as Beam;
             int width = 10 - (beamsTimer[b] / 6);
             int height = 5000;
 
-            // Rectangles are drawn starting from the top-left corner.
-            // So if we want the rectangle centered on the player's location, we have to offset it
-            // by half its size to the left (-width/2) and up (-height/2)
+            // Creates new rectangle for beam and then draws rectangle
             Rectangle r = new Rectangle(-width, -height, width, height);
-
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red)) {
                 e.Graphics.FillRectangle(redBrush, r);
             }
@@ -400,9 +384,11 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws tank epxlosions using tankTimer
         /// </summary>
         private void ExplosionDrawer(object o, PaintEventArgs e)
         {
+            //Gets tank. If world no longer has tank, remove tank from tankTimer and return
             Tank t = o as Tank;
             Tank temp = new Tank();
             if (!theWorld.GetTank(t.ID, out temp))
@@ -411,7 +397,7 @@ namespace TankWars
                 return;
             }
 
-            //Gets the tank object and sets width and height for explosion. Sets antialias
+            //Gets the tank object and sets width and height for explosion using tankTimer
             int frames = tankTimer[t];
             int radius;
             if (frames <= 50)
@@ -421,12 +407,9 @@ namespace TankWars
             else
                 radius = 0;
 
-            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            //Creates rectangle and then draws ellipse/circle of explosion
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
             {
-                // Circles are drawn starting from the top-left corner.
-                // So if we want the circle centered on the powerup's location, we have to offset it
-                // by half its size to the left (-width/2) and up (-height/2)
                 Rectangle r = new Rectangle(-(radius / 2), -(radius / 2), radius, radius);
 
                 e.Graphics.FillEllipse(redBrush, r);
@@ -437,21 +420,22 @@ namespace TankWars
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
         /// DrawObjectWithTransform will invoke this method
+        /// Draws walls
         /// </summary>
-        /// <param name="o">The object to draw</param>
-        /// <param name="e">The PaintEventArgs to access the graphics</param>
         private void WallDrawer(object o, PaintEventArgs e)
         {
+            //Gets wall and distance between the two points
             Wall w = o as Wall;
-
             int height, width;
             int distance = (int)Math.Sqrt(Math.Pow(w.p1.GetX() - w.p2.GetX(), 2) + Math.Pow(w.p1.GetY() - w.p2.GetY(), 2)) + 50;
 
+            //If X's are same, then wall is vertical
             if (w.p2.GetX() == w.p1.GetX())
             {
                 width = 50;
                 height = distance;
             }
+            //Otherwise, wall is horizontal
             else
             {
                 height = 50;
@@ -461,15 +445,12 @@ namespace TankWars
             //Texture brush with image to draw walls
             TextureBrush textureBrush = new TextureBrush(WallImage, System.Drawing.Drawing2D.WrapMode.Tile);
             textureBrush.ScaleTransform(0.8f, 0.8f);
-
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            //Uses texture brush to create new rectangle and fill rectangle with image
             using (textureBrush)
             {
-                // Rectangles are drawn starting from the top-left corner.
-                // So if we want the rectangle centered on the player's location, we have to offset it
-                // by half its size to the left (-width/2) and up (-height/2)
                 Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
                 e.Graphics.FillRectangle(textureBrush, r);
             }
         }
@@ -479,8 +460,10 @@ namespace TankWars
         /// </summary>
         protected override void OnPaint(PaintEventArgs e)
         {
+            //Makes sure world is null, since it is null while loading game
             if (theWorld != null)
             {
+                //Locks world since it accesses info from it
                 lock (theWorld)
                 {
                     //Get player's tank to center view
@@ -505,19 +488,23 @@ namespace TankWars
                     // Draw the tanks
                     foreach (Tank tank in theWorld.GetTanks())
                     {
+                        //Draw tank, turret, and info if tank is alive and ingame
                         if (!tank.died && !tankTimer.ContainsKey(tank) && tank.hitPoints > 0)
                         {
                             DrawObjectWithTransform(e, tank, theWorld.GetSize(), tank.location.GetX(), tank.location.GetY(), tank.orientation.ToAngle(), TankDrawer);
                             DrawObjectWithTransform(e, tank, theWorld.GetSize(), tank.location.GetX(), tank.location.GetY(), tank.aiming.ToAngle(), TurretDrawer);
                             DrawObjectWithTransform(e, tank, theWorld.GetSize(), tank.location.GetX(), tank.location.GetY(), 0, InfoDrawer);
                         }
+                        //Otherwise, add tank to tank timer, increment tank timer, or remove tank from tank timer if it is alive
                         else
                         {
+                            //If tank is a live again, remove from tank timer
                             if(tank.hitPoints > 0)
                             {
                                 tankTimer.Remove(tank);
                                 break;
                             }
+                            //If tank is already in tank timer, decrement tank timer or remove tank from timer
                             if (tankTimer.ContainsKey(tank))
                             {
                                 if (tankTimer[tank] < 200)
@@ -529,6 +516,7 @@ namespace TankWars
                                     tankTimer.Remove(tank);
                                 }
                             }
+                            //Add tank to timer if not in timer yet
                             else
                             {
                                 tankTimer.Add(tank, 0);
@@ -543,7 +531,7 @@ namespace TankWars
                         DrawObjectWithTransform(e, w, theWorld.GetSize(), location.GetX(), location.GetY(), 0, WallDrawer);
                     }
 
-                    //Draw beams
+                    //Draw beams if existed for less than 60 frames
                     List<Beam> beams = new List<Beam>(beamsTimer.Keys);
                     foreach (Beam b in beams)
                     {
@@ -551,6 +539,7 @@ namespace TankWars
                         {
                             beamsTimer.Remove(b);
                         }
+                        //Increments beamsTimer and draws beams
                         else
                         {
                             beamsTimer[b]++;
@@ -558,7 +547,7 @@ namespace TankWars
                         }
                     }
 
-                    // Draw the powerups
+                    // Draw the powerups if not dead
                     foreach (Powerup pow in theWorld.GetPowerups())
                     {
                         if (!pow.died)
@@ -567,7 +556,7 @@ namespace TankWars
                         }
                     }
 
-                    //Draw projectiles
+                    //Draw projectiles if not dead
                     foreach (Projectile p in theWorld.GetProjectiles())
                     {
                         if (!p.died)
@@ -576,7 +565,7 @@ namespace TankWars
                         }
                     }
 
-                    //Draw tank explosions
+                    //Draw tank explosions with tanks in tankTimer
                     List<Tank> tanks = new List<Tank>(tankTimer.Keys);
                     foreach (Tank t in tanks)
                     {

@@ -83,7 +83,7 @@ namespace TankWars
             hostText.Size = new Size(70, 15);
             this.Controls.Add(hostText);
 
-            // Place and add the drawing panel
+            // Place and add the drawing panel with event when beam gets fired
             drawingPanel = new DrawingPanel(world);
             drawingPanel.Location = new Point(0, menuSize);
             drawingPanel.Size = new Size(viewSize, viewSize);
@@ -91,7 +91,7 @@ namespace TankWars
             this.Controls.Add(drawingPanel);
             controller.BeamFired += drawingPanel.DrawBeam;
 
-            //Set up controls
+            //Set up control events for keys and mouse inputs
             this.KeyDown += Moved;
             drawingPanel.MouseDown += Shoot;
             drawingPanel.MouseUp += StopShoot;
@@ -121,7 +121,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Method to be called when key is pushed to call controller's Move method
+        /// Method to be called when key is pushed to set controller's movement booleans to true
         /// </summary>
         private void Moved(Object sender, KeyEventArgs e)
         {
@@ -146,7 +146,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Method to be called when key is done being pushed. Calls controller's move
+        /// Method to be called when key is done being pushed to set controller's movement booleans to false
         /// </summary>
         private void StopMove(Object sender, KeyEventArgs e)
         {
@@ -171,7 +171,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Method to be called when mouse is clicked to change controller's bools
+        /// Method to be called when mouse is clicked to change controller's mouse bools to true
         /// </summary>
         private void Shoot(Object sender, MouseEventArgs e)
         {
@@ -187,7 +187,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Method to be called when mouse button is released to change controller's bools
+        /// Method to be called when mouse button is released to change controller's mouse bools to false
         /// </summary>
         private void StopShoot(Object sender, MouseEventArgs e)
         {
@@ -203,7 +203,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Method to be called when mouse moves. Calls controller's aiming metho
+        /// Method to be called when mouse moves. Calls controller's aiming method with normalized vector2D of mouse location
         /// </summary>
         private void Aim(Object sender, MouseEventArgs e)
         {
@@ -222,6 +222,7 @@ namespace TankWars
 
         /// <summary>
         /// Handler for the controller's WorldLoaded event. Sets this form and drawingPanel's world to the loaded world
+        /// Also enables KeyPreview
         /// </summary>
         private void SetWorld()
         {
@@ -233,10 +234,11 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Called when Start is clicked. Disables form components, enables KeyPreview, and calls controller's connect method
+        /// Called when Start is clicked. Disables form components and calls controller's connect method
         /// </summary>
         private void StartClick(object sender, EventArgs e)
         {
+            //If host and name are nonempty
             if (hostText.TextLength > 0 && nameText.TextLength > 0)
             {
                 // Disable the form controls

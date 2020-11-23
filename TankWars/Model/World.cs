@@ -50,7 +50,7 @@ namespace TankWars
             if (tanks.ContainsKey(ID))
             {
                 tanks[ID].UpdateTank(ID, location, orientation, aiming, name, hp, score, died, disconnected);
-                //If it's dead, remove from dictionary
+                //If it's disconnected, remove from dictionary
                 if (tanks[ID].disconnected)
                 {
                     tanks.Remove(ID);
@@ -165,7 +165,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Returns true if tank is in dictionary. Also sets t to that tank if it exists
+        /// Returns true if tank is in dictionary. Also sets out t to that tank if it exists
         /// </summary>
         public bool GetTank(int ID, out Tank t)
         {

@@ -35,7 +35,7 @@ namespace TankWars
             get; private set;
         }
 
-        //Property for tank who shot projectile
+        //Property for tank ID of who shot projectile
         [JsonProperty(PropertyName = "owner")]
         public int owner
         {
