@@ -15,6 +15,38 @@ namespace TankWars
         //Size of world
         private int size;
 
+        //Game Properties
+        public int timePerFrame
+        {
+            get; set;
+        }
+        public int projectileSpeed
+        {
+            get; set;
+        }
+        public int projectileDelay
+        {
+            get; set;
+        }
+        public int tankSpeed
+        {
+            get; set;
+        }
+        public int respawnTime
+        {
+            get; set;
+        }
+        public const int tankSize = 60;
+        public const int wallSize = 50;
+        public int maxPowers
+        {
+            get; set;
+        }
+        public int maxPowerDelay
+        {
+            get; set;
+        }
+
         //Property to define if walls have been loaded into the game
         public bool WallsLoaded
         {
