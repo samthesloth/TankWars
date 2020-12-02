@@ -11,6 +11,7 @@ namespace TankWars
         private Dictionary<int, Projectile> projectiles;
         private Dictionary<int, Wall> walls;
         private Dictionary<int, Powerup> powerups;
+        private Dictionary<int, Beam> beams;
 
         //Size of world
         private int size;
@@ -62,7 +63,17 @@ namespace TankWars
             projectiles = new Dictionary<int, Projectile>();
             walls = new Dictionary<int, Wall>();
             powerups = new Dictionary<int, Powerup>();
+            beams = new Dictionary<int, Beam>();
             this.size = size;
+
+            //Set properties to default
+            timePerFrame = 17;
+            projectileSpeed = 25;
+            projectileDelay = 80;
+            tankSpeed = 3;
+            respawnTime = 300;
+            maxPowers = 2;
+            maxPowerDelay = 1650;
         }
 
         /// <summary>
@@ -128,6 +139,14 @@ namespace TankWars
         }
 
         /// <summary>
+        /// Adds beam to the beams dictionary. Removed after beam data is sent.
+        /// </summary>
+        public void AddBeam(int ID, Vector2D origin, Vector2D direction, int owner)
+        {
+            beams.Add(ID, new Beam(ID, origin, direction, owner));
+        }
+
+        /// <summary>
         /// Updates, adds, or removes powerup from dictionary
         /// </summary>
         public void UpdatePowerup(int ID, Vector2D location, bool died)
@@ -166,6 +185,15 @@ namespace TankWars
         {
             foreach (Projectile p in projectiles.Values)
                 yield return p;
+        }
+
+        /// <summary>
+        /// Returns IEnumerable of Beams dictionary
+        /// </summary>
+        public IEnumerable<Beam> GetBeams()
+        {
+            foreach (Beam b in beams.Values)
+                yield return b;
         }
 
         /// <summary>

@@ -77,6 +77,16 @@ namespace TankWars
             get; private set;
         }
 
+        public int beams
+        {
+            get; set;
+        }
+
+        public Vector2D velocity
+        {
+            get; set;
+        }
+
         /// <summary>
         /// Default constructor for tank
         /// </summary>
@@ -98,6 +108,8 @@ namespace TankWars
             this.score = score;
             this.died = died;
             this.disconnected = disconnected;
+            beams = 0;
+            velocity = new Vector2D(0, 0);
         }
 
         /// <summary>
@@ -115,5 +127,7 @@ namespace TankWars
             this.died = died;
             this.disconnected = disconnected;
         }
+
+
     }
 }
