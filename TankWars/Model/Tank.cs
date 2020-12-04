@@ -128,6 +128,23 @@ namespace TankWars
             this.disconnected = disconnected;
         }
 
+        public void hit()
+        {
+            this.hitPoints--;
+        }
+
+        public void kill()
+        {
+            this.score++;
+        }
+
+        public void setDisconnected()
+        {
+            this.hitPoints = 0;
+            this.died = true;
+            this.disconnected = true;
+        }
+
 
     }
 }

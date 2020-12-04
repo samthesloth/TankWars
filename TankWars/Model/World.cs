@@ -147,6 +147,15 @@ namespace TankWars
         }
 
         /// <summary>
+        /// Removes beam from the beams dictionary.
+        /// </summary>
+        public void RemoveBeam(int ID)
+        {
+            if(beams.ContainsKey(ID))
+                beams.Remove(ID);
+        }
+
+        /// <summary>
         /// Updates, adds, or removes powerup from dictionary
         /// </summary>
         public void UpdatePowerup(int ID, Vector2D location, bool died)

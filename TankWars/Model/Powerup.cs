@@ -54,5 +54,10 @@ namespace TankWars
             this.location = location;
             this.died = died;
         }
+
+        public void setDied()
+        {
+            this.died = true;
+        }
     }
 }

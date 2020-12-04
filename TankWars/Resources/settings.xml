@@ -5,29 +5,7 @@
   <RespawnRate>300</RespawnRate> 
   
   
-  <!-- top border -->
-  <Wall>
-    <p1><x>-975</x><y>-975</y></p1>
-	<p2><x>975</x><y>-975</y></p2>
-  </Wall>
   
-  <!-- left border -->
-  <Wall>
-	<p2><x>-975</x><y>975</y></p2>
-    <p1><x>-975</x><y>-975</y></p1>
-  </Wall>
-  
-  <!-- right border -->
-  <Wall>
-    <p1><x>975</x><y>975</y></p1>
-	<p2><x>975</x><y>-975</y></p2>
-  </Wall>
-  
-  <!-- bottom border -->
-  <Wall>
-    <p1><x>975</x><y>975</y></p1>
-	<p2><x>-975</x><y>975</y></p2>
-  </Wall>
   
   <!-- upper left 'L' piece -->
   <Wall>

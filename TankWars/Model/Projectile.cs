@@ -72,5 +72,10 @@ namespace TankWars
             this.owner = owner;
             this.died = died;
         }
+
+        public void setDied()
+        {
+            this.died = true;
+        }
     }
 }
