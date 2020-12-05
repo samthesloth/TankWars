@@ -88,7 +88,7 @@ namespace TankWars
             }
             state.OnNetworkAction = ReceiveStartup;
             server = state;
-            Networking.Send(state.TheSocket, PlayerName);
+            Networking.Send(state.TheSocket, PlayerName + "\n");
             lock (state)
             {
                 Networking.GetData(state);

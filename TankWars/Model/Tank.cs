@@ -77,11 +77,17 @@ namespace TankWars
             get; private set;
         }
 
+        /// <summary>
+        /// Holds the amount of beams a tank can use.
+        /// </summary>
         public int beams
         {
             get; set;
         }
 
+        /// <summary>
+        /// Used to determine new location related to movement.
+        /// </summary>
         public Vector2D velocity
         {
             get; set;
@@ -128,16 +134,25 @@ namespace TankWars
             this.disconnected = disconnected;
         }
 
+        /// <summary>
+        /// If tank gets hit, remove health.
+        /// </summary>
         public void hit()
         {
             this.hitPoints--;
         }
 
+        /// <summary>
+        /// If tank kills another tank, add score.
+        /// </summary>
         public void kill()
         {
             this.score++;
         }
 
+        /// <summary>
+        /// if Tank disconnects, update it properly.
+        /// </summary>
         public void setDisconnected()
         {
             this.hitPoints = 0;

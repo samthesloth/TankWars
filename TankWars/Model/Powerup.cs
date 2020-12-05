@@ -55,6 +55,9 @@ namespace TankWars
             this.died = died;
         }
 
+        /// <summary>
+        /// if powerup is consumed, set it to dead.
+        /// </summary>
         public void setDied()
         {
             this.died = true;

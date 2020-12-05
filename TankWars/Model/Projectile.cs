@@ -73,6 +73,9 @@ namespace TankWars
             this.died = died;
         }
 
+        /// <summary>
+        /// if projectile is destroyed, set it to dead.
+        /// </summary>
         public void setDied()
         {
             this.died = true;
